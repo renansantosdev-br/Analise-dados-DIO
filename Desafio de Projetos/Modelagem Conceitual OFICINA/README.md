@@ -1,93 +1,133 @@
-# Modelagem de Dados - Oficina Mecânica
+# Modelagem de Dados para Sistema de Gerenciamento de Oficina Mecânica
 
-Este repositório apresenta o projeto de modelagem de dados conceitual para um sistema de gerenciamento de ordens de serviço (OS) de uma oficina mecânica. O esquema foi desenvolvido a partir de uma narrativa de negócio, visando estruturar as informações de forma lógica e coerente para suportar as operações da oficina.
+Este repositório apresenta a modelagem de dados conceitual para um sistema de controle e gerenciamento de execução de Ordens de Serviço (OS) em uma oficina mecânica. O objetivo é criar uma estrutura de banco de dados robusta que suporte o fluxo de trabalho desde a chegada do veículo até a conclusão dos serviços e registro final.
 
-## Descrição do Projeto
+## Visão Geral do Modelo
 
-O objetivo do sistema é controlar o fluxo de trabalho da oficina, desde a recepção do veículo do cliente até a conclusão e entrega do serviço. O processo inclui:
+O Diagrama de Entidade-Relacionamento (DER) abaixo ilustra as principais entidades do sistema e seus relacionamentos, garantindo a integridade e a rastreabilidade das informações.
 
-1.  Cadastro de clientes e seus veículos.
-2.  Designação de uma equipe de mecânicos para avaliar o veículo.
-3.  Criação de uma Ordem de Serviço (OS) detalhando os serviços a serem executados e as peças necessárias.
-4.  Cálculo do valor total da OS com base em uma tabela de referência para mão de obra e no custo das peças.
-5.  Obtenção da autorização do cliente para iniciar o trabalho.
-6.  Execução dos serviços pela equipe designada.
-7.  Acompanhamento do status da OS até sua finalização.
+![Diagrama de Entidade-Relacionamento da Oficina Mecânica](modelagem_oficina.png)
 
-## Esquema Conceitual
+## Desenvolvimento da Modelagem
 
-O diagrama abaixo representa as entidades, seus atributos e os relacionamentos que compõem o sistema.
+A modelagem foi desenvolvida com base nos seguintes requisitos e processos de negócio da oficina:
 
-*(Insira a imagem gerada do esquema aqui)*
+1.  **Cadastro de Clientes e Veículos:** Clientes trazem seus veículos para manutenção ou reparo. Cada veículo é associado a um cliente.
+2.  **Organização por Equipes:** Os mecânicos são organizados em equipes, e cada Ordem de Serviço é designada a uma equipe específica.
+3.  **Processo da Ordem de Serviço (OS):**
+    * A equipe designada identifica os serviços necessários e preenche uma OS.
+    * A OS contém detalhes como data de emissão, data prevista para conclusão, status e os valores associados.
+    * Os valores da OS são compostos pelo custo da mão de obra (consultando um catálogo de serviços) e o custo das peças (consultando um catálogo de peças).
+    * O cliente precisa autorizar a execução dos serviços antes que a OS avance para a etapa de execução.
+4.  **Execução e Avaliação:** A mesma equipe que avaliou os serviços é responsável pela sua execução.
+5.  **Gestão de Pessoas:** Os mecânicos são cadastrados com informações básicas e sua especialidade.
 
-### Entidades e Atributos
+## Estrutura e Entidades Detalhadas
 
-* **Clientes**
-    * `idCliente` (PK): Identificador único do cliente.
-    * `Nome`: Nome completo do cliente.
-    * `CPF`: CPF do cliente.
-    * `Telefone`: Número de contato.
+O modelo é composto pelas seguintes entidades e seus atributos:
 
-* **Veiculos**
-    * `idVeiculo` (PK): Identificador único do veículo.
-    * `idCliente` (FK): Referência ao cliente proprietário.
-    * `Placa`: Placa do veículo.
-    * `Modelo`: Modelo do veículo.
-    * `Ano`: Ano de fabricação/modelo.
+### 1. Clientes
 
-* **Equipes**
-    * `idEquipe` (PK): Identificador único da equipe de mecânicos.
-    * `DescricaoEquipe`: Nome ou descrição da equipe (ex: "Equipe A - Motor").
+* **Descrição:** Armazena os dados dos proprietários dos veículos.
+* **Atributos:**
+    * `idClientes` (INT, PK, Auto_Increment)
+    * `nome_completo` (VARCHAR(255), NOT NULL)
+    * `cpfcnpj` (VARCHAR(14), NOT NULL, UNIQUE) - Documento de identificação do cliente.
+    * `telefone` (VARCHAR(15))
+    * `email` (VARCHAR(255), UNIQUE)
+    * `Clientescol` (VARCHAR(45)) - *Pode ser uma coluna para observações adicionais ou refatorada para um campo mais específico se necessário.*
 
-* **Mecanicos**
-    * `idMecanico` (PK): Identificador único do mecânico (baseado no código).
-    * `Nome`: Nome completo do mecânico.
-    * `Endereco`: Endereço do mecânico.
-    * `Especialidade`: Especialidade principal do mecânico.
+### 2. Veiculos
 
-* **Ordens_Servico**
-    * `idOS` (PK): Número da ordem de serviço.
-    * `idVeiculo` (FK): Referência ao veículo em serviço.
-    * `idEquipe` (FK): Referência à equipe responsável.
-    * `DataEmissao`: Data em que a OS foi criada.
-    * `DataConclusao`: Data prevista para a entrega do serviço.
-    * `ValorTotal`: Valor total calculado (soma de serviços e peças).
-    * `Status`: Situação atual da OS (ex: "Aguardando Avaliação", "Aguardando Autorização", "Em Execução", "Concluído").
-    * `Autorizado`: Flag (Sim/Não) que indica a autorização do cliente.
+* **Descrição:** Armazena as informações dos veículos atendidos, vinculados a um cliente.
+* **Relacionamento:** `Clientes` (1:N) - Um cliente pode ter muitos veículos.
+* **Atributos:**
+    * `idVeiculos` (INT, PK, Auto_Increment)
+    * `placa_veicular` (VARCHAR(7), NOT NULL, UNIQUE)
+    * `marca` (VARCHAR(50))
+    * `modelo` (VARCHAR(50))
+    * `ano_fabricacao` (INT)
+    * `cor` (VARCHAR(30))
+    * `Clientes_idClientes` (INT, FK) - Chave estrangeira para a tabela `Clientes`.
 
-* **Servicos**
-    * `idServico` (PK): Identificador único do serviço.
-    * `Descricao`: Nome do serviço (ex: "Troca de óleo", "Alinhamento").
-    * `ValorMaoDeObra`: Valor da mão de obra para execução do serviço.
+### 3. Equipe
 
-* **Pecas**
-    * `idPeca` (PK): Identificador único da peça.
-    * `NomePeca`: Nome ou descrição da peça.
-    * `ValorUnitario`: Preço de cada unidade da peça.
+* **Descrição:** Organiza os mecânicos em equipes de trabalho e designa equipes para as Ordens de Serviço.
+* **Atributos:**
+    * `idEquipe` (INT, PK, Auto_Increment)
+    * `nome_equipe` (VARCHAR(100), NOT NULL, UNIQUE)
 
-### Tabelas Associativas (Relacionamentos N:M)
+### 4. Mecanico
 
-* **Equipe_Mecanicos**: Associa mecânicos a equipes, permitindo que um mecânico possa fazer parte de mais de uma equipe e que uma equipe tenha vários mecânicos.
-    * `idEquipe` (FK)
-    * `idMecanico` (FK)
+* **Descrição:** Cadastro de todos os mecânicos da oficina.
+* **Relacionamento:** `Equipe` (1:N) - Uma equipe pode ter muitos mecânicos.
+* **Atributos:**
+    * `idMecanico` (INT, PK, Auto_Increment)
+    * `nomeMecanico` (VARCHAR(255), NOT NULL)
+    * `endereco` (VARCHAR(255))
+    * `especialidade` (VARCHAR(100), NOT NULL)
+    * `Equipe_idEquipe` (INT, FK) - Chave estrangeira para a tabela `Equipe`.
 
-* **OS_Servicos**: Associa os serviços que serão realizados em uma Ordem de Serviço.
-    * `idOS` (FK)
-    * `idServico` (FK)
+### 5. Ordens_de_Servico (OS)
 
-* **OS_Pecas**: Associa as peças que serão utilizadas em uma Ordem de Serviço.
-    * `idOS` (FK)
-    * `idPeca` (FK)
-    * `Quantidade`: Quantas unidades da peça serão usadas.
+* **Descrição:** Tabela central que registra cada ordem de serviço, vinculando veículo e equipe.
+* **Relacionamentos:**
+    * `Veiculos` (1:N) - Um veículo pode ter muitas Ordens de Serviço.
+    * `Equipe` (1:N) - Uma equipe pode estar associada a muitas Ordens de Serviço.
+* **Atributos:**
+    * `id_OS` (INT, PK, Auto_Increment)
+    * `data_emissao` (DATETIME, NOT NULL, DEFAULT CURRENT_TIMESTAMP)
+    * `data_conclusao_prevista` (DATE, NOT NULL)
+    * `data_conclusao_real` (DATE) - Data real de finalização, preenchida após a conclusão.
+    * `valor_total` (DECIMAL(10,2)) - Valor final da OS, calculado pela soma de serviços e peças.
+    * `status` (VARCHAR(50), NOT NULL) - Ex: 'Em Análise', 'Aguardando Autorização', 'Autorizada', 'Em Execução', 'Concluída'.
+    * `Equipe_idEquipe` (INT, FK) - Chave estrangeira para a tabela `Equipe`.
+    * `Veiculos_idVeiculos` (INT, FK) - Chave estrangeira para a tabela `Veiculos`.
 
-## Considerações Adicionais
+### 6. Catalogo_Servicos
 
-Durante a modelagem, algumas decisões foram tomadas para complementar a narrativa original, visando um modelo mais completo e robusto:
+* **Descrição:** Tabela de referência com todos os serviços de mão de obra e seus preços padrão.
+* **Atributos:**
+    * `id_servico` (INT, PK, Auto_Increment)
+    * `descricao` (VARCHAR(255), NOT NULL, UNIQUE)
+    * `valor_mao_de_obra` (DECIMAL(10,2), NOT NULL)
 
-1.  **Dados de Cliente:** Foram adicionados os campos `CPF` e `Telefone` na entidade `Clientes`, pois são informações essenciais para o cadastro e contato.
-2.  **Chaves Primárias (PK):** Foi adotado um padrão de `id` como chave primária para todas as entidades principais, facilitando a padronização e a geração automática de códigos.
-3.  **Relacionamento Equipe-Mecânico:** Foi criado um relacionamento N:M (muitos-para-muitos) entre `Equipes` e `Mecanicos` para dar flexibilidade ao sistema, permitindo que um mecânico possa atuar em diferentes equipes ao longo do tempo.
-4.  **Valor Total na OS:** O campo `ValorTotal` foi adicionado à `Ordens_Servico`. Embora possa ser calculado dinamicamente, armazená-lo garante o registro histórico do valor no momento do fechamento da OS.
-5.  **Campo `Autorizado`:** Foi adicionado um campo booleano (Sim/Não) para registrar de forma explícita a autorização do cliente, complementando o campo `Status`.
+### 7. OS_Itens_Servico (Tabela Associativa)
 
-Este esquema conceitual serve como uma base sólida para a próxima fase de criação do modelo lógico e, posteriormente, a implementação do banco de dados físico.
+* **Descrição:** Detalha os serviços de mão de obra específicos que compõem uma Ordem de Serviço.
+* **Relacionamento:** `Ordens_de_Servico` (N:N) com `Catalogo_Servicos`.
+* **Atributos:**
+    * `Ordens_de_Servico_id_OS` (INT, PK, FK) - Chave estrangeira para `Ordens_de_Servico`.
+    * `Catalogo_Servicos_id_servico` (INT, PK, FK) - Chave estrangeira para `Catalogo_Servicos`.
+    * `valor_cobrado` (DECIMAL(10,2), NOT NULL) - Valor real cobrado pelo serviço naquela OS, crucial para histórico.
+
+### 8. Catalogo_Pecas
+
+* **Descrição:** Tabela de referência para as peças disponíveis ou frequentemente utilizadas, incluindo estoque.
+* **Atributos:**
+    * `id_Peca` (INT, PK, Auto_Increment)
+    * `descricao` (VARCHAR(255), NOT NULL)
+    * `numero_fabricante` (VARCHAR(100), UNIQUE) - Código de identificação do fabricante para a peça.
+    * `valor_unitario` (DECIMAL(10,2), NOT NULL) - Preço de venda unitário da peça.
+    * `quantidade_estoque` (INT, DEFAULT 0) - Quantidade da peça disponível em estoque.
+
+### 9. OS_Itens_Peca (Tabela Associativa)
+
+* **Descrição:** Detalha as peças que serão utilizadas em uma Ordem de Serviço, com suas quantidades e valores cobrados.
+* **Relacionamento:** `Ordens_de_Servico` (N:N) com `Catalogo_Pecas`.
+* **Atributos:**
+    * `Ordens_de_Servico_id_OS` (INT, PK, FK) - Chave estrangeira para `Ordens_de_Servico`.
+    * `Catalogo_Pecas_id_Peca` (INT, PK, FK) - Chave estrangeira para `Catalogo_Pecas`.
+    * `quantidade` (INT, NOT NULL, DEFAULT 1) - Quantidade da peça utilizada.
+    * `valor_unitario_cobrado` (DECIMAL(10,2), NOT NULL) - Preço unitário da peça cobrado naquela OS, para histórico.
+
+## Considerações Finais e Próximos Passos
+
+Este modelo serve como uma base sólida para a implementação de um sistema de gerenciamento de oficina. Para a implementação física, os próximos passos incluiriam:
+
+* **Definição do SGBD:** Escolher um Sistema Gerenciador de Banco de Dados (MySQL, PostgreSQL, SQL Server, etc.).
+* **Geração dos Scripts DDL:** Criar os comandos `CREATE TABLE` com base nesta modelagem.
+* **Implementação da Lógica de Negócio:** Desenvolver a aplicação que interage com este banco de dados, incluindo a lógica para o cálculo do `valor_total` da OS, atualização de estoque, gerenciamento de status, etc.
+* **Segurança:** Implementar medidas de segurança para proteger os dados.
+
+Este modelo foi projetado para ser intuitivo e eficiente, facilitando o controle e a gestão das operações da oficina.
