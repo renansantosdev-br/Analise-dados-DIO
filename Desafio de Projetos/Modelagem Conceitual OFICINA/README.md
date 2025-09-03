@@ -6,7 +6,7 @@ Este repositório apresenta a modelagem de dados conceitual para um sistema de c
 
 O Diagrama de Entidade-Relacionamento (DER) abaixo ilustra as principais entidades do sistema e seus relacionamentos, garantindo a integridade e a rastreabilidade das informações.
 
-![Diagrama de Entidade-Relacionamento da Oficina Mecânica](modelagem_oficina.png)
+![Diagrama de Entidade-Relacionamento da Oficina Mecânica](Projeto_modelagem_oficina.png)
 
 ## Desenvolvimento da Modelagem
 
@@ -131,3 +131,4 @@ Este modelo serve como uma base sólida para a implementação de um sistema de 
 * **Segurança:** Implementar medidas de segurança para proteger os dados.
 
 Este modelo foi projetado para ser intuitivo e eficiente, facilitando o controle e a gestão das operações da oficina.
+
